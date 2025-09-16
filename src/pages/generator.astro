@@ -1,69 +1,117 @@
 ---
 import Layout from "../layouts/Layout.astro";
-const svgCode = `<svg
-        width="200"
-        height="200"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <g id="car-body">
-            <rect x="40" y="100" width="120" height="40" rx="10" fill="blue"
-            ></rect>
-            <rect x="60" y="70" width="80" height="30" rx="10" fill="blue"
-            ></rect>
-        </g>
-        <g id="windows">
-            <rect x="65" y="75" width="30" height="20" rx="4" fill="lightblue"
-            ></rect>
-            <rect x="105" y="75" width="30" height="20" rx="4" fill="lightblue"
-            ></rect>
-        </g>
-        <g id="wheels">
-            <circle cx="60" cy="140" r="10" fill="black"></circle>
-            <circle cx="140" cy="140" r="10" fill="black"></circle>
-        </g>
-        <g id="details">
-            <circle cx="130" cy="115" r="3" fill="yellow"></circle>
-        </g>
-    </svg>`;
 ---
 
 <Layout>
     <div
         class="flex flex-col h-full items-center justify-center glass bg-primary"
     >
-        <!-- 🖼️ Aperçu + 💻 Code côte à côte -->
-        <div class="flex flex-col gap-8 mx-auto p-8 w-full md:flex-row">
-            <!-- Aperçu SVG -->
+        <div class="flex flex-col gap-8 mx-auto p-8 w-full md:flex-row h-180">
+            <!-- 🖼️ Aperçu SVG -->
             <div
                 class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
             >
-                <h2 class="text-xl font-bold mb-4">Aperçu SVG</h2>
                 <div
-                    class="border border-dashed border-primary p-4 w-full flex justify-center items-center min-h-[250px] bg-gradient-to-br from-blue-50 to-blue-100"
+                    id="svg-container"
+                    class="w-full h-full flex justify-center items-center border border-dashed border-primary bg-gradient-to-br from-blue-50 to-blue-100"
                 >
-                    <div innerHTML={svgCode}></div>
+                    <div
+                        id="svg-output"
+                        class="w-full h-full flex justify-center items-center"
+                    >
+                        <!-- SVG généré sera inséré ici -->
+                    </div>
                 </div>
             </div>
 
-            <!-- Code SVG -->
+            <!-- 💻 Code SVG -->
             <div
-                class="card bg-neutral text-neutral-content shadow-md p-6 flex-1"
+                class="card bg-neutral text-neutral-content shadow-md p-6 flex-1 overflow-auto"
             >
                 <pre
-                    class="bg-neutral text-neutral-content p-4 rounded overflow-x-auto text-sm">
-                {svgCode}
-            </pre>
+                    id="svg-code"
+                    class="bg-neutral text-neutral-content p-4 rounded text-sm whitespace-pre-wrap w-full h-full overflow-auto">
+                </pre>
             </div>
         </div>
-
-        <!-- 📝 Prompt en dessous, pleine largeur -->
         <div class="flex gap-4 w-full max-w-3xl px-8 mb-8">
             <input
+                id="user-prompt"
                 type="text"
                 placeholder="Décrivez votre SVG..."
                 class="input input-bordered w-full"
             />
-            <button class="btn btn-secondary">Générer</button>
+            <button id="generate-button" class="btn btn-secondary"
+                >Générer</button
+            >
         </div>
     </div>
 </Layout>
+
+<script>
+  //@ts-nocheck
+
+  // Fonction pour appeler l'API et récupérer le SVG
+  async function generateSVG(prompt) {
+    console.log("Generating SVG for prompt:", prompt);
+    const res = await fetch("/api/generateSVG", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur serveur");
+    }
+
+    const data = await res.json();
+    return data.svg;
+  }
+
+  // Fonction déclenchée au clic sur le bouton
+  async function handleSubmit() {
+    const promptElement = document.getElementById("user-prompt");
+    const prompt = promptElement ? promptElement.value.trim() : "";
+
+    if (!prompt) {
+      alert("Veuillez entrer un prompt SVG.");
+      return;
+    }
+
+    const svgContainer = document.getElementById("svg-container");
+    const svgOutput = document.getElementById("svg-output");
+    const codeBlock = document.getElementById("svg-code");
+    const generateButton = document.getElementById("generate-button");
+
+    // 🌀 Affiche le spinner et désactive le bouton
+    svgContainer.innerHTML = `<span class="loading loading-ring loading-xl"></span>`;
+    generateButton.disabled = true;
+
+    try {
+      const svgCode = await generateSVG(prompt);
+      console.log("svgCode:", svgCode);
+
+      // 🖼️ Affichage visuel du SVG
+      svgContainer.innerHTML = svgCode;
+
+      // 💻 Affichage du code SVG brut
+      if (codeBlock) {
+        codeBlock.textContent = svgCode;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la génération du SVG :", error);
+      alert("Une erreur est survenue lors de la génération du SVG.");
+      svgContainer.innerHTML = `<p class="text-error">Erreur de génération du SVG</p>`;
+    } finally {
+      generateButton.disabled = false;
+    }
+  }
+
+  // Attache l'événement au bouton après chargement du DOM
+  window.addEventListener("DOMContentLoaded", () => {
+    const generateButton = document.getElementById("generate-button");
+    if (generateButton) {
+      generateButton.addEventListener("click", handleSubmit);
+    }
+  });
+</script>

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Header from "../components/Header.astro";
 ---
 <!doctype html>
 <html lang="en" data-theme="light" class="h-full">
@@ -13,6 +14,7 @@ import "../styles/global.css";
 	<body class="h-full">
 		<div class="h-full flex flex-col min-h-0">
 			<div class="flex-1 min-h-0">
+				<Header/>
 				<slot />
 			</div>
 		</div>
