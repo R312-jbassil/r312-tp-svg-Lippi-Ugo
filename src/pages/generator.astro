@@ -6,7 +6,9 @@ import Layout from "../layouts/Layout.astro";
     <div
         class="flex flex-col h-full items-center justify-center glass bg-primary"
     >
-        <div class="flex flex-col gap-8 mx-auto p-8 w-full md:flex-row h-180">
+        <div
+            class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full md:flex-row h-180"
+        >
             <!-- 🖼️ Aperçu SVG -->
             <div
                 class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
@@ -45,13 +47,24 @@ import Layout from "../layouts/Layout.astro";
                 >Générer</button
             >
         </div>
+        <div class="flex gap-4 mt-4">
+            <input
+                id="svg-name"
+                type="text"
+                placeholder="Nom du SVG"
+                class="input input-bordered w-full"
+            />
+            <button id="save-button" class="btn btn-secondary"
+                >Enregistrer</button
+            >
+        </div>
     </div>
 </Layout>
 
 <script>
   //@ts-nocheck
 
-  // Fonction pour appeler l'API et récupérer le SVG
+  // 🔧 Fonction pour appeler l'API de génération SVG
   async function generateSVG(prompt) {
     console.log("Generating SVG for prompt:", prompt);
     const res = await fetch("/api/generateSVG", {
@@ -68,7 +81,36 @@ import Layout from "../layouts/Layout.astro";
     return data.svg;
   }
 
-  // Fonction déclenchée au clic sur le bouton
+  // 💾 Fonction pour enregistrer le SVG dans PocketBase
+  async function saveSVG() {
+    const nameInput = document.getElementById("svg-name");
+    const codeBlock = document.getElementById("svg-code");
+    const name = nameInput ? nameInput.value.trim() : "";
+    const svgCode = codeBlock ? codeBlock.textContent.trim() : "";
+
+    if (!name || !svgCode) {
+      alert("Veuillez entrer un nom et générer un SVG avant d’enregistrer.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/saveSVG", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, svg: svgCode }),
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de l’enregistrement");
+
+      alert("✅ SVG enregistré avec succès !");
+      nameInput.value = "";
+    } catch (err) {
+      console.error(err);
+      alert("❌ Échec de l’enregistrement du SVG.");
+    }
+  }
+
+  // 🚀 Fonction principale déclenchée au clic sur "Générer"
   async function handleSubmit() {
     const promptElement = document.getElementById("user-prompt");
     const prompt = promptElement ? promptElement.value.trim() : "";
@@ -79,7 +121,6 @@ import Layout from "../layouts/Layout.astro";
     }
 
     const svgContainer = document.getElementById("svg-container");
-    const svgOutput = document.getElementById("svg-output");
     const codeBlock = document.getElementById("svg-code");
     const generateButton = document.getElementById("generate-button");
 
@@ -100,18 +141,22 @@ import Layout from "../layouts/Layout.astro";
       }
     } catch (error) {
       console.error("Erreur lors de la génération du SVG :", error);
-      alert("Une erreur est survenue lors de la génération du SVG.");
       svgContainer.innerHTML = `<p class="text-error">Erreur de génération du SVG</p>`;
     } finally {
       generateButton.disabled = false;
     }
   }
 
-  // Attache l'événement au bouton après chargement du DOM
+  // 🎯 Attache les événements après chargement du DOM
   window.addEventListener("DOMContentLoaded", () => {
     const generateButton = document.getElementById("generate-button");
+    const saveButton = document.getElementById("save-button");
+
     if (generateButton) {
       generateButton.addEventListener("click", handleSubmit);
+    }
+    if (saveButton) {
+      saveButton.addEventListener("click", saveSVG);
     }
   });
 </script>
