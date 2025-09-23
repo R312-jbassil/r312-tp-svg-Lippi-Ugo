@@ -5,7 +5,7 @@ const { id, name, svg } = Astro.props;
 <div class="card bg-base-100 shadow-xl border border-base-300 rounded-xl overflow-hidden">
   <div class="card-body flex flex-col justify-between items-center gap-4 p-6 min-h-[300px]">
     <div
-      class="w-full h-[180px] flex justify-center items-center border border-dashed border-primary rounded-lg overflow-hidden"
+      class="w-full h-[200px] flex justify-center items-center border border-dashed border-primary rounded-lg overflow-hidden"
       set:html={svg}
     ></div>
     <h2 class="text-lg font-semibold text-center">{name}</h2>
