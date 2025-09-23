@@ -3,74 +3,69 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-    <div
-        class="flex flex-col h-full items-center justify-center glass bg-primary"
-    >
+  <div
+    class="flex flex-col h-full items-center justify-center glass bg-primary"
+  >
+    <div class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full md:flex-row h-180">
+      <!-- 🖼️ Aperçu SVG -->
+      <div
+        class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
+      >
         <div
-            class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full md:flex-row h-180"
+          id="svg-container"
+          class="w-full h-full flex justify-center items-center border border-dashed border-primary bg-gradient-to-br from-blue-50 to-blue-100"
         >
-            <!-- 🖼️ Aperçu SVG -->
-            <div
-                class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
-            >
-                <div
-                    id="svg-container"
-                    class="w-full h-full flex justify-center items-center border border-dashed border-primary bg-gradient-to-br from-blue-50 to-blue-100"
-                >
-                    <div
-                        id="svg-output"
-                        class="w-full h-full flex justify-center items-center"
-                    >
-                        <!-- SVG généré sera inséré ici -->
-                    </div>
-                </div>
-            </div>
+          <div
+            id="svg-output"
+            class="w-full h-full flex justify-center items-center"
+          >
+            <!-- SVG généré sera inséré ici -->
+          </div>
+        </div>
+      </div>
 
-            <!-- 💻 Code SVG -->
-            <div
-                class="card bg-neutral text-neutral-content shadow-md p-6 flex-1 overflow-auto"
-            >
-                <pre
-                    id="svg-code"
-                    class="bg-neutral text-neutral-content p-4 rounded text-sm whitespace-pre-wrap w-full h-full overflow-auto">
-                </pre>
-            </div>
-        </div>
-        <div class="flex gap-4 w-full max-w-3xl px-8 mb-8">
-            <input
-                id="user-prompt"
-                type="text"
-                placeholder="Décrivez votre SVG..."
-                class="input input-bordered w-full"
-            />
-            <button id="generate-button" class="btn btn-secondary"
-                >Générer</button
-            >
-        </div>
-        <div class="flex gap-4 mt-4">
-            <input
-                id="svg-name"
-                type="text"
-                placeholder="Nom du SVG"
-                class="input input-bordered w-full"
-            />
-            <button id="save-button" class="btn btn-secondary"
-                >Enregistrer</button
-            >
-        </div>
+      <!-- 💻 Code SVG -->
+      <div
+        class="card bg-neutral text-neutral-content shadow-md p-6 flex-1 overflow-auto"
+      >
+        <pre
+          id="svg-code"
+          class="bg-neutral text-neutral-content p-4 rounded text-sm whitespace-pre-wrap w-full h-full overflow-auto">
+        </pre>
+      </div>
     </div>
+
+    <div class="flex gap-4 w-full max-w-3xl px-8 mb-8">
+      <input
+        id="user-prompt"
+        type="text"
+        placeholder="Décrivez votre SVG..."
+        class="input input-bordered w-full"
+      />
+      <button id="generate-button" class="btn btn-secondary">Générer</button>
+    </div>
+
+    <div class="flex gap-4 mt-4">
+      <input
+        id="svg-name"
+        type="text"
+        placeholder="Nom du SVG"
+        class="input input-bordered w-full"
+      />
+      <button id="save-button" class="btn btn-secondary">Enregistrer</button>
+    </div>
+  </div>
 </Layout>
 
 <script>
   //@ts-nocheck
+  let promptList = [];
 
-  // 🔧 Fonction pour appeler l'API de génération SVG
-  async function generateSVG(prompt) {
-    console.log("Generating SVG for prompt:", prompt);
+  async function generateSVG(messages) {
     const res = await fetch("/api/generateSVG", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ messages }),
     });
 
     if (!res.ok) {
@@ -81,7 +76,95 @@ import Layout from "../layouts/Layout.astro";
     return data.svg;
   }
 
-  // 💾 Fonction pour enregistrer le SVG dans PocketBase
+  /*async function handleSubmit() {
+    const promptElement = document.getElementById("user-prompt");
+    const prompt = promptElement ? promptElement.value.trim() : "";
+
+    if (!prompt) {
+      alert("Veuillez entrer un prompt SVG.");
+      return;
+    }
+
+    const svgContainer = document.getElementById("svg-container");
+    const svgOutput = document.getElementById("svg-output");
+    const codeBlock = document.getElementById("svg-code");
+    const generateButton = document.getElementById("generate-button");
+
+    svgContainer.innerHTML = `<span class="loading loading-ring loading-xl"></span>`;
+    generateButton.disabled = true;
+
+    // Réinitialiser l'historique
+    promptList.length = 0;
+    promptList.push({ role: "user", content: prompt });
+
+    try {
+      const aiResponse = await generateSVG(promptList);
+      const svgMatch = aiResponse.content?.match(/<svg[\s\S]*?<\/svg>/i);
+      const svgCode = svgMatch ? svgMatch[0] : "";
+
+      promptList.push({ role: "assistant", content: svgCode });
+
+      svgOutput.textContent = svgCode;
+      svgContainer.innerHTML = svgCode;
+      if (codeBlock) {
+        codeBlock.textContent = svgCode;
+      }
+    } catch (error) {
+      console.error("Erreur SVG:", error);
+      svgContainer.innerHTML = `<p class="text-error">Erreur de génération du SVG</p>`;
+    } finally {
+      generateButton.disabled = false;
+    }
+  }*/
+
+  async function handleSubmit() {
+    const promptElement = document.getElementById("user-prompt");
+    const generateButton = document.getElementById("generate-button");
+    const svgContainer = document.getElementById("svg-container");
+    const svgOutput = document.getElementById("svg-output");
+    const codeBlock = document.getElementById("svg-code");
+
+    const prompt = promptElement ? promptElement.value.trim() : "";
+    if (!prompt) {
+      alert("Veuillez entrer un prompt SVG.");
+      return;
+    }
+
+    // Réinitialiser l'historique
+    promptList.length = 0;
+    promptList.push({ role: "user", content: prompt });
+
+    if (svgContainer) {
+      svgContainer.innerHTML = `<span class="loading loading-ring loading-xl"></span>`;
+    }
+    if (generateButton) generateButton.disabled = true;
+
+    try {
+      const aiResponse = await generateSVG(promptList);
+      const svgMatch = aiResponse.content?.match(/<svg[\s\S]*?<\/svg>/i);
+      const svgCode = svgMatch ? svgMatch[0] : "";
+
+      promptList.push({ role: "assistant", content: svgCode });
+
+      if (svgOutput) {
+        svgOutput.textContent = svgCode;
+      }
+      if (svgContainer) {
+        svgContainer.innerHTML = svgCode;
+      }
+      if (codeBlock) {
+        codeBlock.textContent = svgCode;
+      }
+    } catch (error) {
+      console.error("Erreur SVG:", error);
+      if (svgContainer) {
+        svgContainer.innerHTML = `<p class="text-error">Erreur de génération du SVG</p>`;
+      }
+    } finally {
+      if (generateButton) generateButton.disabled = false;
+    }
+  }
+
   async function saveSVG() {
     const nameInput = document.getElementById("svg-name");
     const codeBlock = document.getElementById("svg-code");
@@ -110,44 +193,6 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
-  // 🚀 Fonction principale déclenchée au clic sur "Générer"
-  async function handleSubmit() {
-    const promptElement = document.getElementById("user-prompt");
-    const prompt = promptElement ? promptElement.value.trim() : "";
-
-    if (!prompt) {
-      alert("Veuillez entrer un prompt SVG.");
-      return;
-    }
-
-    const svgContainer = document.getElementById("svg-container");
-    const codeBlock = document.getElementById("svg-code");
-    const generateButton = document.getElementById("generate-button");
-
-    // 🌀 Affiche le spinner et désactive le bouton
-    svgContainer.innerHTML = `<span class="loading loading-ring loading-xl"></span>`;
-    generateButton.disabled = true;
-
-    try {
-      const svgCode = await generateSVG(prompt);
-      console.log("svgCode:", svgCode);
-
-      // 🖼️ Affichage visuel du SVG
-      svgContainer.innerHTML = svgCode;
-
-      // 💻 Affichage du code SVG brut
-      if (codeBlock) {
-        codeBlock.textContent = svgCode;
-      }
-    } catch (error) {
-      console.error("Erreur lors de la génération du SVG :", error);
-      svgContainer.innerHTML = `<p class="text-error">Erreur de génération du SVG</p>`;
-    } finally {
-      generateButton.disabled = false;
-    }
-  }
-
-  // 🎯 Attache les événements après chargement du DOM
   window.addEventListener("DOMContentLoaded", () => {
     const generateButton = document.getElementById("generate-button");
     const saveButton = document.getElementById("save-button");
