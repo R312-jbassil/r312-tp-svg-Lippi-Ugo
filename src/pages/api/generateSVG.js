@@ -9,7 +9,10 @@ export const POST = async ({ request }) => {
   console.log("Requête reçue");
 
   // ✅ Extraction de l'historique des messages
-  const { messages } = await request.json();
+  const requestData = await request.json();
+  console.log("Données de la requête:", requestData);
+  const { messages } = requestData;
+  console.log("Messages reçus:", messages);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: "Missing messages" }), {
