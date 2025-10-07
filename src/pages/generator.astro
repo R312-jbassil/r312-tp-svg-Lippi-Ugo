@@ -3,10 +3,14 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <div class="flex flex-col h-full items-center justify-center glass bg-primary">
+  <div
+    class="flex flex-col h-full items-center justify-center glass bg-primary"
+  >
     <div class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full md:flex-row h-180">
       <!-- 🖼️ Aperçu SVG -->
-      <div class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center">
+      <div
+        class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
+      >
         <div
           id="svg-container"
           class="w-full h-full flex justify-center items-center border border-dashed border-primary bg-gradient-to-br from-blue-50 to-blue-100"
@@ -21,11 +25,13 @@ import Layout from "../layouts/Layout.astro";
       </div>
 
       <!-- 💻 Code SVG -->
-      <div class="card bg-neutral text-neutral-content shadow-md p-6 flex-1 overflow-auto">
+      <div
+        class="card bg-neutral text-neutral-content shadow-md p-6 flex-1 overflow-auto"
+      >
         <pre
           id="svg-code"
-          class="bg-neutral text-neutral-content p-4 rounded text-sm whitespace-pre-wrap w-full h-full overflow-auto"
-        ></pre>
+          class="bg-neutral text-neutral-content p-4 rounded text-sm whitespace-pre-wrap w-full h-full overflow-auto">
+        </pre>
       </div>
     </div>
 
@@ -93,7 +99,8 @@ import Layout from "../layouts/Layout.astro";
 
       try {
         const aiResponse = await generateSVG(promptList);
-        const svgCode = aiResponse.content.match(/<svg[\s\S]*?<\/svg>/i)?.[0] || "";
+        const svgCode =
+          aiResponse.content.match(/<svg[\s\S]*?<\/svg>/i)?.[0] || "";
         promptList.push({ role: "assistant", content: svgCode });
 
         if (svgOutput) svgOutput.textContent = svgCode;
@@ -122,7 +129,8 @@ import Layout from "../layouts/Layout.astro";
 
       try {
         const aiResponse = await generateSVG(promptList);
-        const svgCode = aiResponse.content.match(/<svg[\s\S]*?<\/svg>/i)?.[0] || "";
+        const svgCode =
+          aiResponse.content.match(/<svg[\s\S]*?<\/svg>/i)?.[0] || "";
         promptList.push({ role: "assistant", content: svgCode });
 
         if (svgOutput) svgOutput.textContent = svgCode;
@@ -165,9 +173,26 @@ import Layout from "../layouts/Layout.astro";
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      if (generateButton) generateButton.addEventListener("click", handleSubmit);
+      if (generateButton)
+        generateButton.addEventListener("click", handleSubmit);
       if (editButton) editButton.addEventListener("click", handleEdit);
       if (saveButton) saveButton.addEventListener("click", saveSVG);
+    });
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    saveButton.addEventListener("click", async () => {
+      const name = prompt("Enter a name for the SVG:");
+      const svgOutput = document.getElementById("svg-output")?.textContent;
+      console.log("Saving SVG: ", JSON.stringify(svgOutput));
+
+      const params: Collection.Svg = {
+        nom: name,
+        code_svg: svgOutput || "<svg></svg>",
+        chat_history: JSON.stringify(promptList),
+        user: user.id,
+      };
+      await saveSVG(params);
     });
   </script>
 </Layout>

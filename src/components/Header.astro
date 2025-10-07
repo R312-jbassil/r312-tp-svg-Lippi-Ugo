@@ -1,10 +1,66 @@
-<header class="bg-gradient-to-r from-blue-400 to-purple-600 shadow-lg rounded-b-2xl relative z-10">
-  <div class="max-w-[1100px] mx-auto flex flex-col md:flex-row items-center justify-between px-6 py-3">
+---
+import { ui } from "../i18n/ui.js";
+
+const locale = ((Astro.locals as any)?.lang ?? "en") as "en" | "fr";
+const user = (Astro.locals as any)?.user;
+console.log("Locale in index:", locale);
+const signupLabel = locale === 'fr' ? 'Inscription' : 'Sign up';
+---
+
+<header
+  class="bg-gradient-to-r from-blue-400 to-purple-600 shadow-lg rounded-b-2xl relative z-10"
+>
+  <div
+    class="max-w-[1100px] mx-auto flex flex-col md:flex-row items-center justify-between px-6 py-3"
+  >
     <nav>
-      <ul class="flex flex-col md:flex-row gap-4 md:gap-10 items-end md:items-center">
-        <li><a href="/" class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition">Accueil</a></li>
-        <li><a href="/gallery" class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition">Galerie</a></li>
+      <ul
+        class="flex flex-col md:flex-row gap-4 md:gap-10 items-end md:items-center"
+      >
+        <li>
+          <a
+            href="/"
+            class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition"
+            >Accueil</a
+          >
+        </li>
+        <li>
+          <a
+            href="/gallery"
+            class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition"
+            >Galerie</a
+          >
+        </li>
       </ul>
     </nav>
+    <div
+      class="flex flex-col md:flex-row gap-4 md:gap-10 items-end md:items-center"
+    >
+      <form method="POST" action={Astro.url.pathname}>
+        <select name="language" class="select" onchange="this.form.submit()">
+          <option disabled selected="true">{ui[locale].nav.language}</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+        </select>
+      </form>
+      {
+        user ? (
+          <form method="POST" action="/api/logout" class="m-0 p-0 ml-4">
+            <button type="submit" class="btn btn-primary">
+              Logout
+            </button>
+          </form>
+        ) : (
+          <div class="flex items-center gap-2">
+            <a href="/login" class="btn btn-secondary">
+              Login
+            </a>
+            <a id="signup-btn" href="/signup" class="btn btn-accent" onclick="event.stopPropagation(); window.location.href='/signup'; return false;">
+              {signupLabel}
+            </a>
+          </div>
+        )
+      }
+    </div>
   </div>
 </header>

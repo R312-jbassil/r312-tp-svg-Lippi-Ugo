@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import Header from "../components/Header.astro";
-import { ui } from "../i18n/ui.js";
 
 const locale = (Astro.locals?.lang ?? 'en') as 'en' | 'fr';
 console.log('Locale in index:', locale);
@@ -20,19 +19,6 @@ console.log('Locale in index:', locale);
 		<div class="h-full flex flex-col min-h-0 bg-primary">
 			<div class="flex-1 min-h-0">
 				<Header />
-				<form class="flex flex-col px-6 pt-4 pb-4 glass bg-primary" method="POST" action={Astro.url.pathname}>
-					<select
-						name="language"
-						class="select"
-						onchange="this.form.submit()"
-					>
-						<option disabled selected="true"
-							>{ui[locale].nav.language}</option
-						>
-						<option value="en">English</option>
-						<option value="fr">Français</option>
-					</select>
-				</form>
 				<slot />
 			</div>
 		</div>
