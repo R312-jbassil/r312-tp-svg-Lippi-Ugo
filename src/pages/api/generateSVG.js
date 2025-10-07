@@ -1,9 +1,9 @@
 import { OpenAI } from 'openai';
 
 // Récupération des variables d'environnement
-const HF_TOKEN = import.meta.env.HF_TOKEN;
-const NOM_MODEL = import.meta.env.NOM_MODEL;
-const HF_URL = import.meta.env.HF_URL;
+const HF_TOKEN = import.meta.env.HF_TOKEN_V2;
+const NOM_MODEL = import.meta.env.NOM_MODEL_V2;
+const HF_URL = import.meta.env.HF_URL_V2;
 
 export const POST = async ({ request }) => {
   console.log("Requête reçue");
