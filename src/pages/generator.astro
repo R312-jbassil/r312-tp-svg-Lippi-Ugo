@@ -1,12 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { ui } from "../i18n/ui.js";
+const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
 ---
 
 <Layout>
   <div
     class="flex flex-col h-full items-center justify-center glass bg-primary"
   >
-    <div class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full md:flex-row h-180">
+    <div class="flex flex-col gap-8 mx-auto p-8 pt-6 w-full md:flex-row h-180">
       <!-- 🖼️ Aperçu SVG -->
       <div
         class="card bg-base-100 shadow-md p-6 flex-1 flex flex-col items-center justify-center"
@@ -35,27 +37,37 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </div>
 
-    <!-- 🧠 Prompt utilisateur -->
+    <!-- 🤖 Sélecteur de modèle IA -->
+    <div class="flex gap-4 w-full max-w-3xl px-8 mb-4 items-center">
+      <label for="ai-model" class="text-base-300 font-medium">{ui[locale].generator.modelLabel}</label>
+      <select id="ai-model" class="select select-bordered select-sm">
+        <option value="meta-llama/Llama-3.1-8B-Instruct:novita">Llama 3.1 8B (HuggingFace)</option>
+        <option value="openai/gpt-oss-20b:free">GPT OSS 20B (OpenRouter - Free)</option>
+      </select>
+    </div>
+
+    <!-- �🧠 Prompt utilisateur -->
     <div class="flex gap-4 w-full max-w-3xl px-8 mb-8">
       <input
         id="user-prompt"
         type="text"
-        placeholder="Décrivez votre SVG..."
+        placeholder={ui[locale].generator.promptLabel}
         class="input input-bordered w-full"
       />
-      <button id="generate-button" class="btn btn-secondary">Générer</button>
-      <button id="edit-button" class="btn btn-secondary">Editer</button>
+      <button id="generate-button" class="btn btn-secondary">{ui[locale].generator.generateButton}</button>
+      <button id="edit-button" class="btn btn-secondary">{ui[locale].generator.editButton}</button>
     </div>
 
-    <!-- 💾 Enregistrement -->
-    <div class="flex gap-4 mt-4">
+    <!-- 💾 Enregistrement et téléchargement -->
+    <div class="flex gap-4 mt-4 mb-12">
       <input
         id="svg-name"
         type="text"
-        placeholder="Nom du SVG"
+        placeholder={ui[locale].generator.savePlaceholder}
         class="input input-bordered w-full"
       />
-      <button id="save-button" class="btn btn-secondary">Enregistrer</button>
+      <button id="save-button" class="btn btn-secondary">{ui[locale].generator.saveButton}</button>
+      <button id="download-button" class="btn btn-accent">{ui[locale].generator.downloadButton}</button>
     </div>
   </div>
 
@@ -64,10 +76,12 @@ import Layout from "../layouts/Layout.astro";
     let promptList = [];
 
     async function generateSVG(messages) {
+      const selectedModel = document.getElementById("ai-model")?.value || "meta-llama/Llama-3.1-8B-Instruct:novita";
+      
       const res = await fetch("/api/generateSVG", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages, model: selectedModel }),
       });
 
       if (!res.ok) throw new Error("Erreur serveur");
@@ -172,11 +186,35 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
+    async function downloadSVG() {
+      const svgCode = codeBlock?.textContent.trim();
+      const name = nameInput?.value.trim() || `svg-${Date.now()}`;
+
+      if (!svgCode) {
+        alert("Veuillez générer un SVG avant de le télécharger.");
+        return;
+      }
+
+      // Créer un blob et télécharger directement
+      const blob = new Blob([svgCode], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
+      const downloadButton = document.getElementById("download-button");
+      
       if (generateButton)
         generateButton.addEventListener("click", handleSubmit);
       if (editButton) editButton.addEventListener("click", handleEdit);
       if (saveButton) saveButton.addEventListener("click", saveSVG);
+      if (downloadButton) downloadButton.addEventListener("click", downloadSVG);
     });
 
     const user = JSON.parse(localStorage.getItem("user"));

@@ -1,7 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
-
-const user = Astro.locals.user;
+import { ui } from "../i18n/ui.js";
+const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
+const user = (Astro.locals as any).user;
 if (user) {
   return Astro.redirect("/");
 }
@@ -10,19 +11,19 @@ if (user) {
   <section class="min-h-screen flex items-center justify-center bg-base-200">
     <div class="card w-full max-w-md shadow-xl bg-base-100">
       <div class="card-body">
-        <h1 class="card-title text-3xl mb-4 justify-center">Créer un compte</h1>
+        <h1 class="card-title text-3xl mb-4 justify-center">{ui[locale].signup.title}</h1>
         <form id="signup-form" class="flex flex-col gap-4">
-          <input type="email" name="email" placeholder="Email" required class="input input-bordered" />
-          <input type="password" name="password" placeholder="Mot de passe" required class="input input-bordered" />
-          <input type="password" name="passwordConfirm" placeholder="Confirmer le mot de passe" required class="input input-bordered" />
-          <button type="submit" class="btn btn-primary w-full">S'inscrire</button>
+          <input type="email" name="email" placeholder={ui[locale].signup.email} required class="input input-bordered" />
+          <input type="password" name="password" placeholder={ui[locale].signup.password} required class="input input-bordered" />
+          <input type="password" name="passwordConfirm" placeholder={ui[locale].signup.passwordConfirm} required class="input input-bordered" />
+          <button type="submit" class="btn btn-primary w-full">{ui[locale].signup.button}</button>
         </form>
         <p id="status" class="mt-4 text-center text-error"></p>
       </div>
     </div>
   </section>
 
-  <script>
+  <script define:vars={{ SIGNUP_SUCCESS: ui[locale].signup.success, SIGNUP_PW_MISMATCH: ui[locale].signup.error }}>
     //@ts-nocheck
     const form = document.getElementById("signup-form");
     const status = document.getElementById("status");
@@ -36,7 +37,7 @@ if (user) {
       const passwordConfirm = formData.get("passwordConfirm");
 
       if (password !== passwordConfirm) {
-        status.textContent = "❌ Les mots de passe ne correspondent pas.";
+        status.textContent = "❌ " + SIGNUP_PW_MISMATCH;
         return;
       }
 
@@ -48,13 +49,17 @@ if (user) {
         });
 
         if (!res.ok) {
-          const data = await res.json();
-          status.textContent = "❌ " + (data?.error || "Erreur lors de l'inscription.");
+          let message = "Erreur lors de l'inscription.";
+          try {
+            const data = await res.json();
+            message = data?.error || message;
+          } catch {}
+          status.textContent = "❌ " + message;
           return;
         }
 
-        status.textContent = "✅ Compte créé avec succès !";
-        setTimeout(() => window.location.href = "/login", 1000);
+        status.textContent = "✅ " + SIGNUP_SUCCESS;
+        setTimeout(() => { window.location.href = "/login"; }, 800);
       } catch (err) {
         console.error(err);
         status.textContent = "❌ Erreur réseau ou serveur.";

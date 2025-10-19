@@ -11,33 +11,41 @@ const signupLabel = locale === 'fr' ? 'Inscription' : 'Sign up';
   class="bg-gradient-to-r from-blue-400 to-purple-600 shadow-lg rounded-b-2xl relative z-10"
 >
   <div
-    class="max-w-[1100px] mx-auto flex flex-col md:flex-row items-center justify-between px-6 py-3"
+    class="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between px-0 py-3"
   >
+    <!-- Left side: Navigation Menu -->
     <nav>
       <ul
-        class="flex flex-col md:flex-row gap-4 md:gap-10 items-end md:items-center"
+        class="flex flex-col md:flex-row gap-4 md:gap-6 items-center"
       >
         <li>
           <a
             href="/"
             class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition"
-            >Accueil</a
+            >{ui[locale].nav.home}</a
+          >
+        </li>
+        <li>
+          <a
+            href="/generator"
+            class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition"
+            >{ui[locale].nav.generator}</a
           >
         </li>
         <li>
           <a
             href="/gallery"
             class="text-white font-medium text-lg px-3 py-1 rounded-md hover:bg-white/20 hover:text-pink-300 transition"
-            >Galerie</a
+            >{ui[locale].nav.gallery}</a
           >
         </li>
       </ul>
     </nav>
     <div
-      class="flex flex-col md:flex-row gap-4 md:gap-10 items-end md:items-center"
+      class="flex flex-col md:flex-row gap-12 md:gap-4 items-center"
     >
       <form method="POST" action={Astro.url.pathname}>
-        <select name="language" class="select" onchange="this.form.submit()">
+        <select name="language" class="select select-sm" onchange="this.form.submit()">
           <option disabled selected="true">{ui[locale].nav.language}</option>
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -45,22 +53,59 @@ const signupLabel = locale === 'fr' ? 'Inscription' : 'Sign up';
       </form>
       {
         user ? (
-          <form method="POST" action="/api/logout" class="m-0 p-0 ml-4">
-            <button type="submit" class="btn btn-primary">
-              Logout
+          <form method="POST" action="/api/logout" class="m-0 p-0">
+            <button type="submit" class="btn btn-primary btn-sm">
+              {ui[locale].nav.logout}
             </button>
           </form>
         ) : (
           <div class="flex items-center gap-2">
-            <a href="/login" class="btn btn-secondary">
-              Login
+            <a href="/login" class="btn btn-secondary btn-sm">
+              {ui[locale].nav.login}
             </a>
-            <a id="signup-btn" href="/signup" class="btn btn-accent" onclick="event.stopPropagation(); window.location.href='/signup'; return false;">
-              {signupLabel}
+            <a id="signup-btn" href="/signup" class="btn btn-accent btn-sm" onclick="event.stopPropagation(); window.location.href='/signup'; return false;">
+              {ui[locale].nav.signup}
             </a>
           </div>
         )
       }
+      <label class="flex cursor-pointer gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+          ></path>
+        </svg>
+        <input
+          type="checkbox"
+          value="dark"
+          class="toggle theme-controller"
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="5"></circle>
+          <path
+            d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"
+          ></path>
+        </svg>
+      </label>
     </div>
   </div>
 </header>

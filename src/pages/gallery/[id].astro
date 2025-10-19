@@ -2,6 +2,8 @@
 import Layout from "../../layouts/Layout.astro";
 import pb from "../../utils/pb";
 import { Collections, type SvgsRecord } from "../../utils/pocketbase-types";
+import { ui } from "../../i18n/ui.js";
+const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
 
 const id = Astro.params.id;
 const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
@@ -10,7 +12,7 @@ const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
 <Layout>
   <div class="flex flex-col h-full items-center justify-center glass bg-primary">
     <!-- 🧱 Bloc principal -->
-    <div class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full">
+  <div class="flex flex-col gap-8 mx-auto p-8 pt-0 w-full">
       <!-- 🖼️ Aperçu SVG + 💬 Chat côte à côte en desktop -->
       <div class="flex flex-col md:flex-row gap-8 h-180">
         <!-- 🖼️ Aperçu SVG -->
@@ -42,11 +44,21 @@ const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
               ))
             ) : (
               <p class="text-center text-lg text-base-content/60">
-                Aucun historique de chat disponible.
+                {ui[locale].gallery.noHistory}
               </p>
             )
           }
         </div>
+      </div>
+
+      <!-- 🤖 Sélecteur de modèle IA et téléchargement -->
+      <div class="w-full px-6 py-2 flex items-center gap-4">
+        <label for="ai-model-gallery" class="text-base-content font-medium">{ui[locale].gallery.modelLabel}</label>
+        <select id="ai-model-gallery" class="select select-bordered select-sm">
+          <option value="meta-llama/Llama-3.1-8B-Instruct:novita">Llama 3.1 8B (HuggingFace)</option>
+          <option value="openai/gpt-oss-20b:free">GPT OSS 20B (OpenRouter - Free)</option>
+        </select>
+        <button id="download-svg-btn" class="btn btn-accent btn-sm ml-auto">{ui[locale].gallery.downloadButton}</button>
       </div>
 
       <!-- ✏️ Formulaire en dessous -->
@@ -68,9 +80,9 @@ const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
             name="editPrompt"
             type="text"
             class="input flex-grow"
-            placeholder="Enter a prompt to edit the SVG..."
+            placeholder={ui[locale].gallery.editPrompt}
           />
-          <button class="btn btn-primary" type="submit">Edit</button>
+          <button class="btn btn-primary" type="submit">{ui[locale].gallery.editButton}</button>
         </div>
       </form>
     </div>
@@ -84,11 +96,13 @@ const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
 
       async function generateSVG(prompt) {
         console.log({ prompt });
+        const selectedModel = document.getElementById("ai-model-gallery")?.value || "meta-llama/Llama-3.1-8B-Instruct:novita";
+        
         try {
           const response = await fetch("/api/generateSVG", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: [prompt] }),
+            body: JSON.stringify({ messages: [prompt], model: selectedModel }),
           });
           console.log({ response });
 
@@ -185,6 +199,29 @@ const svg: SvgsRecord = await pb.collection(Collections.Svgs).getOne(id);
 
         form.reset();
       });
+
+      // Gestion du téléchargement SVG
+      const downloadBtn = document.getElementById("download-svg-btn");
+      if (downloadBtn) {
+        downloadBtn.addEventListener("click", () => {
+          const svgElement = document.querySelector("#svg-output svg");
+          if (!svgElement) {
+            alert("Aucun SVG à télécharger.");
+            return;
+          }
+
+          const svgCode = svgElement.outerHTML;
+          const blob = new Blob([svgCode], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `svg-${Date.now()}.svg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+      }
     </script>
   </div>
 </Layout>

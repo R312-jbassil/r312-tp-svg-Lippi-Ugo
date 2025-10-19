@@ -3,6 +3,8 @@ import Layout from '../../layouts/Layout.astro';
 import PocketBase from 'pocketbase';
 import SVGCard from '../../components/SVGCard.astro';
 import { Collections } from '../../utils/pocketbase-types';
+import { ui } from "../../i18n/ui.js";
+const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 const user = Astro.locals.user;
@@ -19,12 +21,12 @@ const svgList = await pb
   });
 ---
 
-<Layout>
+<Layout title={ui[locale].gallery.title}>
   <section class="max-w-7xl mx-auto px-6 py-10">
-    <h1 class="text-4xl font-bold mb-10 text-center text-secondary">Galerie SVG</h1>
+    <h1 class="text-4xl font-bold mb-10 text-center text-secondary">{ui[locale].gallery.title}</h1>
 
     {svgList.length === 0 ? (
-      <p class="text-center text-lg text-error">Aucun SVG enregistré pour le moment.</p>
+      <p class="text-center text-lg text-error">{ui[locale].gallery.save}</p>
     ) : (
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10">
         {svgList.map((record) => (

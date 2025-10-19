@@ -1,4 +1,6 @@
 ---
+import { ui } from "../i18n/ui.js";
+const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
 const { id, name, svg } = Astro.props;
 ---
 
@@ -13,11 +15,11 @@ const { id, name, svg } = Astro.props;
       class="btn btn-outline btn-error btn-sm"
       data-id={id}
     >
-      Supprimer
+      {ui[locale].gallery.delete}
     </button>
     <button>
       <a href={`/gallery/${id}`} class="btn btn-outline btn-primary btn-sm">
-        Modifier
+        {ui[locale].gallery.edit}
       </a>
     </button>
   </div>
