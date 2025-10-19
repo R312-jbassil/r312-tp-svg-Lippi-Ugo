@@ -1,7 +1,6 @@
-import PocketBase from 'pocketbase';
+import pb from "../../utils/pb";
 
-export async function POST({ request }) {
-  const pb = new PocketBase('http://127.0.0.1:8090');
+export async function POST({ request, cookies }) {
   const body = await request.json();
 
   try {
@@ -17,6 +16,10 @@ export async function POST({ request }) {
         console.warn('updateSVG: failed to parse chat_history JSON, saving raw string');
       }
     }
+
+    // Charger cookie auth pour audit si besoin
+    const authCookie = cookies.get("pb_auth")?.value;
+    if (authCookie) pb.authStore.loadFromCookie(authCookie);
 
     const updated = await pb.collection('svgs').update(body.id, {
       // Use the `svg` field which matches the schema (see pocketbase-types.ts)

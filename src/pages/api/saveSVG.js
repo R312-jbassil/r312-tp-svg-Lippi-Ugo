@@ -1,22 +1,43 @@
-import PocketBase from 'pocketbase';
+import pb from "../../utils/pb";
 
-const pb = new PocketBase('http://127.0.0.1:8090');
-
-export async function POST({ request }) {
-  const { name, svg } = await request.json();
-
-  if (!name || !svg) {
-    return new Response('Nom ou SVG manquant', { status: 400 });
-  }
-
+export async function POST({ request, cookies }) {
   try {
-    const record = await pb.collection('svgs').create({ name, svg });
+    const { name, svg, chat_history } = await request.json();
+
+    if (!name || !svg) {
+      return new Response(
+        JSON.stringify({ error: 'Nom ou SVG manquant' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Charger l'auth depuis le cookie pour récupérer l'utilisateur connecté
+    const authCookie = cookies.get("pb_auth")?.value;
+    if (authCookie) {
+      pb.authStore.loadFromCookie(authCookie);
+    }
+
+    const userId = pb.authStore?.record?.id;
+
+    const payload = {
+      name,
+      svg,
+      // enregistrer l'historique s'il est fourni
+      ...(chat_history !== undefined ? { chat_history } : {}),
+      // associer l'utilisateur si le champ existe dans la collection
+      ...(userId ? { user: userId } : {}),
+    };
+
+    const record = await pb.collection('svgs').create(payload);
     return new Response(JSON.stringify(record), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error('Erreur PocketBase:', err);
-    return new Response('Erreur serveur', { status: 500 });
+    return new Response(
+      JSON.stringify({ error: 'Erreur serveur' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }

@@ -173,7 +173,8 @@ const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
         const res = await fetch("/api/saveSVG", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, svg: svgCode }),
+          credentials: "include",
+          body: JSON.stringify({ name, svg: svgCode, chat_history: promptList }),
         });
 
         if (!res.ok) throw new Error("Erreur lors de l’enregistrement");
@@ -215,22 +216,6 @@ const locale = ((Astro.locals as any)?.lang ?? 'en') as 'en' | 'fr';
       if (editButton) editButton.addEventListener("click", handleEdit);
       if (saveButton) saveButton.addEventListener("click", saveSVG);
       if (downloadButton) downloadButton.addEventListener("click", downloadSVG);
-    });
-
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    saveButton.addEventListener("click", async () => {
-      const name = prompt("Enter a name for the SVG:");
-      const svgOutput = document.getElementById("svg-output")?.textContent;
-      console.log("Saving SVG: ", JSON.stringify(svgOutput));
-
-      const params: Collection.Svg = {
-        nom: name,
-        code_svg: svgOutput || "<svg></svg>",
-        chat_history: JSON.stringify(promptList),
-        user: user.id,
-      };
-      await saveSVG(params);
     });
   </script>
 </Layout>
